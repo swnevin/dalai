@@ -9,7 +9,7 @@ export default function Loader() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShow(false);
-    }, 2000); // Set minimum display time to 2 seconds
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -17,7 +17,7 @@ export default function Loader() {
   if (!show) return null;
 
   return (
-    <div className="w-full flex justify-center pt-32">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
       <div className="relative w-32 h-32">
         <Image
           src="/logos/star.png"
