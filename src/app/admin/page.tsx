@@ -152,67 +152,108 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Demo Administration
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <h1 className="text-2xl sm:text-3xl font-montserrat font-bold text-primary">
+            Demo Administrasjon
           </h1>
           <button
             onClick={() => {
               setSelectedDemo(null);
+              setFormData({
+                clientName: '',
+                projectId: '',
+                environment: 'production',
+                brandColor: '#28483F',
+                backgroundPath: '',
+              });
               setShowModal(true);
             }}
-            className="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            className="w-full sm:w-auto bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
           >
-            Add New Demo
+            <PlusIcon className="w-5 h-5" />
+            Ny Demo
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {demos.map((demo) => (
             <div
               key={demo.id}
-              className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow"
+              className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200"
             >
-              <div className="flex flex-col h-full">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    {demo.clientName}
-                  </h3>
-                  <p className="text-sm text-gray-600">Project ID: {demo.projectId}</p>
-                  <p className="text-sm text-gray-600 capitalize">
-                    Environment: {demo.environment}
-                  </p>
-                </div>
-
-                {demo.backgroundPath && (
-                  <div className="relative w-full h-32 mb-4 bg-gray-100 rounded-lg overflow-hidden">
-                    <Image
-                      src={demo.backgroundPath}
-                      alt={`${demo.clientName} background`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-
-                <div className="flex flex-col sm:flex-row gap-2 mt-auto">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-lg sm:text-xl font-montserrat font-semibold text-primary">
+                  {demo.clientName}
+                </h2>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => router.push(`/${demo.clientName}`)}
+                    className="text-primary hover:text-primary-light transition-colors duration-200"
+                    title="Forhåndsvis"
+                  >
+                    <EyeIcon className="w-5 h-5" />
+                  </button>
                   <button
                     onClick={() => {
                       setSelectedDemo(demo);
-                      setFormData(demo);
+                      setFormData({
+                        clientName: demo.clientName,
+                        projectId: demo.projectId,
+                        environment: demo.environment,
+                        brandColor: demo.brandColor,
+                        backgroundPath: demo.backgroundPath,
+                      });
                       setShowModal(true);
                     }}
-                    className="flex-1 px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary/90 transition-colors"
+                    className="text-primary hover:text-primary-light transition-colors duration-200"
+                    title="Rediger"
                   >
-                    Edit
+                    <PencilIcon className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(demo.id)}
-                    className="flex-1 px-3 py-1.5 text-sm border border-red-500 text-red-500 rounded hover:bg-red-50 transition-colors"
+                    onClick={async () => {
+                      if (confirm('Er du sikker på at du vil slette denne demoen?')) {
+                        try {
+                          const response = await fetch(`/api/demos?id=${demo.id}`, {
+                            method: 'DELETE',
+                          });
+                          if (!response.ok) {
+                            throw new Error('Failed to delete demo');
+                          }
+                          fetchDemos();
+                        } catch (error) {
+                          console.error('Error deleting demo:', error);
+                          alert('Failed to delete demo');
+                        }
+                      }
+                    }}
+                    className="text-red-600 hover:text-red-700 transition-colors duration-200"
+                    title="Slett"
                   >
-                    Delete
+                    <TrashIcon className="w-5 h-5" />
                   </button>
                 </div>
+              </div>
+
+              <div className="space-y-2 text-gray-600 font-poppins text-sm sm:text-base">
+                <p className="flex items-center gap-2">
+                  <CodeBracketIcon className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{demo.projectId}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <ServerIcon className="w-4 h-4 flex-shrink-0" />
+                  {demo.environment}
+                </p>
+                <p className="flex items-center gap-2">
+                  <SwatchIcon className="w-4 h-4 flex-shrink-0" />
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-4 h-4 rounded-full border border-gray-200"
+                      style={{ backgroundColor: demo.brandColor }}
+                    />
+                    {demo.brandColor}
+                  </div>
+                </p>
               </div>
             </div>
           ))}

@@ -17,14 +17,14 @@ export default function Loader() {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white">
+    <div className="w-full flex justify-center pt-32">
       <div className="relative w-32 h-32">
         <Image
-          src="/star.png"
+          src="/logos/star.png"
           alt="Loading..."
-          fill
-          className="animate-spin"
-          style={{ animationDuration: '3s' }}
+          width={128}
+          height={128}
+          className="animate-loader object-contain"
           priority
         />
       </div>
