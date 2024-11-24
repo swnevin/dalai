@@ -150,10 +150,10 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen p-2 sm:p-8">
+    <div className="min-h-screen p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-0">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Demo Administration
           </h1>
           <button
@@ -297,7 +297,7 @@ export default function AdminPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {selectedDemo ? 'Change Background Image' : 'Upload Background Image'}
+                  {selectedDemo ? 'Change Background Image' : 'Upload Background Image (Optional)'}
                 </label>
                 <p className="text-sm text-gray-500 mb-2">
                   Upload a screenshot of the client's website as the background image
@@ -323,7 +323,6 @@ export default function AdminPage() {
                       file:text-sm file:font-semibold
                       file:bg-primary file:text-white
                       hover:file:bg-primary/90"
-                    required={!selectedDemo?.backgroundPath}
                   />
                   {formData.backgroundPath && (
                     <p className="text-sm text-green-600">

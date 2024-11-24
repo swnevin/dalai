@@ -28,20 +28,14 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    if (!body.backgroundPath) {
-      return NextResponse.json(
-        { error: 'Background image is required' },
-        { status: 400 }
-      );
-    }
-
+    // Remove backgroundPath validation since it's optional
     const newDemo = {
       id: Math.random().toString(36).substr(2, 9),
       clientName: body.clientName,
       projectId: body.projectId,
       environment: body.environment,
       brandColor: body.brandColor,
-      backgroundPath: body.backgroundPath,
+      backgroundPath: body.backgroundPath || '', // Make it optional with default empty string
     };
 
     demos.push(newDemo);
@@ -57,26 +51,28 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
     const body = await request.json();
-    const index = demos.findIndex(demo => demo.id === body.id);
 
-    if (index === -1) {
+    const demoIndex = demos.findIndex(demo => demo.id === id);
+    if (demoIndex === -1) {
       return NextResponse.json(
         { error: 'Demo not found' },
         { status: 404 }
       );
     }
 
-    demos[index] = {
-      ...demos[index],
+    demos[demoIndex] = {
+      ...demos[demoIndex],
       clientName: body.clientName,
       projectId: body.projectId,
       environment: body.environment,
       brandColor: body.brandColor,
-      backgroundPath: body.backgroundPath || demos[index].backgroundPath,
+      backgroundPath: body.backgroundPath || demos[demoIndex].backgroundPath, // Keep existing path if not provided
     };
 
-    return NextResponse.json(demos[index]);
+    return NextResponse.json(demos[demoIndex]);
   } catch (error) {
     console.error('Error updating demo:', error);
     return NextResponse.json(
