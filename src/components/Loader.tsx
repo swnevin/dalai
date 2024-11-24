@@ -4,28 +4,19 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 export default function Loader() {
-  const [show, setShow] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShow(false);
-    }, 2000); // Set minimum display time to 2 seconds
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!show) return null;
-
   return (
-    <div className="w-full flex justify-center pt-32">
-      <div className="relative w-32 h-32">
-        <Image
-          src="/logos/star.png"
-          alt="Loading..."
-          width={128}
-          height={128}
-          className="animate-loader object-contain"
-        />
+    <div className="fixed inset-0 flex items-center justify-center bg-white">
+      <div className="text-center">
+        <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4 relative">
+          <Image
+            src="/star.png"
+            alt="Loading"
+            fill
+            className="animate-spin"
+            style={{ animationDuration: '3s' }}
+          />
+        </div>
+        <p className="text-gray-600 text-sm sm:text-base">Loading...</p>
       </div>
     </div>
   );
