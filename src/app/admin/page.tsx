@@ -12,6 +12,8 @@ import {
   CodeBracketIcon,
   ServerIcon,
   SwatchIcon,
+  ClipboardDocumentIcon,
+  PuzzlePieceIcon,
 } from '@heroicons/react/24/outline';
 
 interface Demo {
@@ -21,6 +23,7 @@ interface Demo {
   environment: string;
   brandColor: string;
   backgroundPath: string;
+  backgroundType?: 'screenshot' | 'raining-logo';
 }
 
 export default function AdminPage() {
@@ -36,6 +39,7 @@ export default function AdminPage() {
     environment: 'production',
     brandColor: '#28483F',
     backgroundPath: '',
+    backgroundType: 'screenshot' as 'screenshot' | 'raining-logo',
   });
 
   useEffect(() => {
@@ -121,6 +125,7 @@ export default function AdminPage() {
         environment: 'production',
         brandColor: '#28483F',
         backgroundPath: '',
+        backgroundType: 'screenshot',
       });
     } catch (error) {
       console.error('Error saving demo:', error);
@@ -129,7 +134,7 @@ export default function AdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this demo?')) {
+    if (confirm('Er du sikker på at du vil slette denne demoen?')) {
       try {
         const response = await fetch(`/api/demos?id=${id}`, {
           method: 'DELETE',
@@ -152,19 +157,19 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Demo Administration
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 relative z-10">
+            Demo Administrasjon
           </h1>
           <button
             onClick={() => {
               setSelectedDemo(null);
               setShowModal(true);
             }}
-            className="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 justify-center sm:justify-start"
           >
             <PlusIcon className="h-5 w-5" />
-            Add New Demo
+            Ny Demo
           </button>
         </div>
 
@@ -179,9 +184,9 @@ export default function AdminPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">
                     {demo.clientName}
                   </h3>
-                  <p className="text-sm text-gray-600">Project ID: {demo.projectId}</p>
+                  <p className="text-sm text-gray-600">Prosjekt ID: {demo.projectId}</p>
                   <p className="text-sm text-gray-600 capitalize">
-                    Environment: {demo.environment}
+                    Miljø: {demo.environment === 'production' ? 'Produksjon' : 'Utvikling'}
                   </p>
                 </div>
 
@@ -189,40 +194,70 @@ export default function AdminPage() {
                   <div className="relative w-full h-32 mb-4 bg-gray-100 rounded-lg overflow-hidden">
                     <Image
                       src={demo.backgroundPath}
-                      alt={`${demo.clientName} background`}
+                      alt={`${demo.clientName} bakgrunn`}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover"
+                      priority
                     />
                   </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row gap-2 mt-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-auto">
                   <button
                     onClick={() => {
-                      window.open(`/${demo.clientName}`, '_blank');
+                      const embedCode = `<script type="text/javascript">
+  (function(d, t) {
+      var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+      v.onload = function() {
+        window.voiceflow.chat.load({
+          verify: { projectID: '${demo.projectId}' },
+          url: 'https://general-runtime.voiceflow.com',
+          versionID: '${demo.environment}'
+        });
+      }
+      v.src = "https://cdn.voiceflow.com/widget/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
+  })(document, 'script');
+</script>`;
+                      navigator.clipboard.writeText(embedCode);
+                      alert('Kode kopiert til utklippstavlen!');
                     }}
-                    className="flex-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors flex items-center justify-center gap-1"
+                    className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <ClipboardDocumentIcon className="h-4 w-4" />
+                    <span className="whitespace-nowrap">Kopier Kode</span>
+                  </button>
+                  <button
+                    onClick={() => window.open(`/${demo.clientName}`, '_blank')}
+                    className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                   >
                     <EyeIcon className="h-4 w-4" />
-                    View
+                    <span>Forhåndsvis</span>
                   </button>
                   <button
                     onClick={() => {
                       setSelectedDemo(demo);
-                      setFormData(demo);
+                      setFormData({
+                        clientName: demo.clientName,
+                        projectId: demo.projectId,
+                        environment: demo.environment,
+                        brandColor: demo.brandColor,
+                        backgroundPath: demo.backgroundPath,
+                        backgroundType: demo.backgroundType || 'screenshot',
+                      });
                       setShowModal(true);
                     }}
-                    className="flex-1 px-3 py-1.5 text-sm bg-primary text-white rounded hover:bg-primary/90 transition-colors flex items-center justify-center gap-1"
+                    className="w-full px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                   >
                     <PencilIcon className="h-4 w-4" />
-                    Edit
+                    <span>Rediger</span>
                   </button>
                   <button
                     onClick={() => handleDelete(demo.id)}
-                    className="flex-1 px-3 py-1.5 text-sm border border-red-500 text-red-500 rounded hover:bg-red-50 transition-colors flex items-center justify-center gap-1"
+                    className="w-full px-3 py-2 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
                   >
                     <TrashIcon className="h-4 w-4" />
-                    Delete
+                    <span>Slett</span>
                   </button>
                 </div>
               </div>
@@ -235,13 +270,13 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 sm:p-8 max-w-md w-full mx-auto max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">
-              {selectedDemo ? 'Edit Demo' : 'Add New Demo'}
+              {selectedDemo ? 'Rediger Demo' : 'Ny Demo'}
             </h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Client Name
+                  Klientnavn
                 </label>
                 <input
                   type="text"
@@ -256,7 +291,7 @@ export default function AdminPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <CodeBracketIcon className="h-5 w-5" />
-                  Project ID
+                  Prosjekt ID
                 </label>
                 <input
                   type="text"
@@ -271,7 +306,7 @@ export default function AdminPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <ServerIcon className="h-5 w-5" />
-                  Environment
+                  Miljø
                 </label>
                 <select
                   name="environment"
@@ -279,15 +314,15 @@ export default function AdminPage() {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
-                  <option value="production">Production</option>
-                  <option value="development">Development</option>
+                  <option value="production">Produksjon</option>
+                  <option value="development">Utvikling</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                   <SwatchIcon className="h-5 w-5" />
-                  Brand Color
+                  Merkefarge
                 </label>
                 <div className="flex items-center gap-3">
                   <input
@@ -309,39 +344,91 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {selectedDemo ? 'Change Background Image' : 'Upload Background Image (Optional)'}
-                </label>
-                <p className="text-sm text-gray-500 mb-2">
-                  Upload a screenshot of the client's website as the background image
-                </p>
-                <div className="space-y-4">
-                  {selectedDemo && selectedDemo.backgroundPath && (
-                    <div className="relative w-full h-40 bg-gray-100 rounded-lg overflow-hidden">
-                      <Image
-                        src={selectedDemo.backgroundPath}
-                        alt="Current background"
-                        fill
-                        className="object-contain"
-                      />
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <ServerIcon className="h-5 w-5" />
+                    Bakgrunnstype
+                  </label>
+                  <select
+                    name="backgroundType"
+                    value={formData.backgroundType}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm"
+                  >
+                    <option value="screenshot">Skjermbilde Bakgrunn</option>
+                    <option value="raining-logo" disabled>Regnende Logo Bakgrunn (Kommer Snart)</option>
+                  </select>
+                </div>
+
+                {/* Stylesheet Selector - Coming Soon */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <SwatchIcon className="h-5 w-5" />
+                    Stilark
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">Kommer Snart</span>
+                  </label>
+                  <select
+                    disabled
+                    className="mt-1 block w-full rounded-md border border-gray-300 bg-gray-50 py-2 px-3 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm cursor-not-allowed"
+                  >
+                    <option value="default">Standard</option>
+                    <option value="modern">Moderne</option>
+                    <option value="minimal">Minimalistisk</option>
+                    <option value="corporate">Bedrift</option>
+                  </select>
+                </div>
+
+                {/* Extensions */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <PuzzlePieceIcon className="h-5 w-5" />
+                    Utvidelser
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">Kommer Snart</span>
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 p-3 border border-gray-200 rounded-md bg-gray-50 cursor-not-allowed">
+                      <input type="checkbox" disabled className="cursor-not-allowed" />
+                      <span className="text-gray-600">Skjemaer</span>
                     </div>
-                  )}
+                    <div className="flex items-center gap-2 p-3 border border-gray-200 rounded-md bg-gray-50 cursor-not-allowed">
+                      <input type="checkbox" disabled className="cursor-not-allowed" />
+                      <span className="text-gray-600">Filopplasting</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-3 border border-gray-200 rounded-md bg-gray-50 cursor-not-allowed">
+                      <input type="checkbox" disabled className="cursor-not-allowed" />
+                      <span className="text-gray-600">Skann QR-kode</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <SwatchIcon className="h-5 w-5" />
+                    Bakgrunnsbilde
+                  </label>
                   <input
                     type="file"
-                    accept="image/*"
                     onChange={handleFileChange}
-                    className="w-full text-sm text-gray-500
+                    accept="image/*"
+                    className="block w-full text-sm text-gray-500
                       file:mr-4 file:py-2 file:px-4
-                      file:rounded-full file:border-0
+                      file:rounded-md file:border-0
                       file:text-sm file:font-semibold
                       file:bg-primary file:text-white
                       hover:file:bg-primary/90"
                   />
                   {formData.backgroundPath && (
-                    <p className="text-sm text-green-600">
-                      Background image uploaded: {formData.backgroundPath}
-                    </p>
+                    <div className="relative w-full h-32 mt-4 bg-gray-100 rounded-lg overflow-hidden">
+                      <Image
+                        src={formData.backgroundPath}
+                        alt="Forhåndsvisning"
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover"
+                        priority
+                      />
+                    </div>
                   )}
                 </div>
               </div>
@@ -358,17 +445,18 @@ export default function AdminPage() {
                       environment: 'production',
                       brandColor: '#28483F',
                       backgroundPath: '',
+                      backgroundType: 'screenshot',
                     });
                   }}
                   className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
                 >
-                  Cancel
+                  Avbryt
                 </button>
                 <button
                   type="submit"
                   className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors duration-200"
                 >
-                  {selectedDemo ? 'Update' : 'Create'}
+                  {selectedDemo ? 'Lagre Endringer' : 'Opprett Demo'}
                 </button>
               </div>
             </form>
